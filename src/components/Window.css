@@ -1,0 +1,79 @@
+.mikto-window {
+  border-radius: 10px;
+  position: relative;
+  border: 2px solid black;
+}
+
+.mikto-window .window-header {
+  display: grid;
+  grid-template-columns: 25px 25px 25px 1fr;
+  border-bottom: 1px solid #000;
+  height: 25px;
+  border-top-left-radius: 9px;
+  border-top-right-radius: 9px;
+  background-color: #8f8787;
+}
+
+.mikto-window .window-header-text {
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding-left: 8px;
+  cursor: move;
+}
+
+.mikto-window .window-header-red {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+}
+
+.mikto-window .window-header-red-span {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background-color: red;
+}
+
+.mikto-window .window-header-yellow {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+}
+.mikto-window .window-header-yellow-span {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background-color: yellow;
+}
+
+.mikto-window .window-header-green {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+}
+.mikto-window .window-header-green-span {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background-color: limegreen;
+}
+
+.mikto-window .window-body {
+  padding: 5px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 45px);
+}
+
+.mikto-window .window-footer {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  min-height: 9px;
+  cursor: col-resize;
+  background-color: #8f8787;
+  border-bottom-left-radius: 9px;
+  border-bottom-right-radius: 9px;
+}
