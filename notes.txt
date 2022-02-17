@@ -1,0 +1,3 @@
+https://codesandbox.io/s/generic-table-with-react-and-typescript-193s6
+
+https://fernandoabolafio.medium.com/generic-table-component-with-react-and-typescript-d849ad9f4c48
