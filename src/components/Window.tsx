@@ -80,14 +80,11 @@ export const Window: React.FC<WindowProps> = (props) => {
   const onDragMove = (e: MouseEvent) => {
     let newY = translate.y + e.movementY;
     let newX = translate.x + e.movementX;
-    console.log('newY', newY);
     if (frame.current) {
       const parent = frame.current.parentNode as HTMLElement;
       if (parent) {
         const rect = parent.getBoundingClientRect();
         const window = frame.current.getBoundingClientRect();
-        console.log('rect.top', rect.top);
-        console.log('window.top', window.top);
         if (rect) {
           if (window.top < rect.top) {
             newY = lastNewY + dragOffset;
@@ -118,6 +115,7 @@ export const Window: React.FC<WindowProps> = (props) => {
     return {
       ...style,
       transform: `translateX(${translate.x}px) translateY(${translate.y}px)`,
+      boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
     };
   };
 
