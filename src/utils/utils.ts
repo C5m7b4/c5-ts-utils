@@ -157,4 +157,20 @@ const convertSecondsToStringSentence = (seconds: number) => {
   return result;
 };
 
+// @ts-ignore
+export function objectValues<T extends {}>(obj: T) {
+  return Object.keys(obj).map((objKey) => obj[objKey as keyof T]);
+}
+
+export type PrimitiveType = string | symbol | number | boolean;
+
+export function isPrimitive(value: any): value is PrimitiveType {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'symbol'
+  );
+}
+
 export { pad, getDayOfWeek, addDays, isPrime, convertSecondsToStringSentence };
