@@ -15,6 +15,7 @@ export type TableHeader<T> = {
   visible?: boolean;
   style?: React.CSSProperties;
   width?: number;
+  filterable?: boolean;
 };
 
 export interface TableProps<T> {
@@ -35,12 +36,20 @@ export function DataGrid<T>(props: TableProps<T>) {
   const [showColumnsModal, setShowColumnModal] = useState(false);
   const [columnModalStyle, setColumnModalStyle] = useState({});
   const [checkedColumns, setCheckedColumns] = useState<string[]>([]);
+  const [selectedHeader, setSelectedHeader] = useState<TableHeader<T>>();
+  const [filterChecked, setFilterChecked] = useState(false);
+  const [checkedFilters, setCheckedFilters] = useState<string[]>([]);
+  const [filteredData, setFilteredData] = useState<T[]>([]);
+  const [filterColumn, setFilterColumn] = useState<string>('');
+  const [showFilter, setShowFilter] = useState(false);
 
   const { fill = true } = props;
 
   const table = useRef<HTMLTableElement>(null);
+  let draggedId = '';
 
   useEffect(() => {
+    setFilteredData(props.data);
     if (table.current) {
       if (fill) {
         const parent = table.current.parentNode as HTMLElement;
@@ -56,8 +65,9 @@ export function DataGrid<T>(props: TableProps<T>) {
     }
   }, []);
 
-  const handleModal = (divId: string) => {
+  const handleModal = (divId: string, header: TableHeader<T>) => {
     const div = document.getElementById(divId);
+    setSelectedHeader(header);
 
     if (div && table.current) {
       const rect = div.getBoundingClientRect();
@@ -73,6 +83,9 @@ export function DataGrid<T>(props: TableProps<T>) {
         };
         setColumnModalStyle(style);
         setShowColumnModal(!showColumnsModal);
+        if (showColumnsModal) {
+          setShowFilter(false);
+        }
       }
     }
   };
@@ -117,15 +130,140 @@ export function DataGrid<T>(props: TableProps<T>) {
     }
   };
 
+  const dragStart = (ev: React.DragEvent<HTMLDivElement>) => {
+    const id = (ev.target as HTMLDivElement).id;
+    ev.dataTransfer.setData('text/plain', id);
+    draggedId = id;
+  };
+
+  const dragEnter = (ev: React.DragEvent<HTMLDivElement>) => {
+    ev.preventDefault();
+    const id = (ev.target as HTMLDivElement).id;
+    if (id !== draggedId) {
+      (ev.target as HTMLDivElement).classList.add('mikto-table-drag-over');
+    }
+  };
+
+  const dragOver = (ev: React.DragEvent<HTMLDivElement>) => {
+    ev.preventDefault();
+    const id = (ev.target as HTMLDivElement).id;
+    if (id !== draggedId) {
+      (ev.target as HTMLDivElement).classList.add('mikto-table-drag-over');
+    }
+  };
+
+  const dragLeave = (ev: React.DragEvent<HTMLDivElement>) => {
+    (ev.target as HTMLDivElement).classList.remove('mikto-table-drag-over');
+  };
+
+  const drop = (ev: React.DragEvent<HTMLDivElement>) => {
+    (ev.target as HTMLDivElement).classList.remove('mikto-table-drag-over');
+
+    const id = ev.dataTransfer.getData('text/plain');
+    const originalPosition = id.slice(id.length - 1);
+    const header = props.headers[+originalPosition];
+    props.headers.splice(+originalPosition, 1);
+
+    // get the X position of the dropped element
+    const dropElementX = ev.clientY;
+    const draggable = document.getElementById(id);
+    if (draggable) {
+      draggable.classList.remove('mikto-hide-dragged-column');
+    }
+
+    const table = document.getElementById(props.identifier);
+    if (table) {
+      const thead = table.querySelector('thead');
+      if (thead) {
+        const tr = thead.querySelector('tr');
+        if (tr) {
+          for (let i = 0; i < tr.childNodes.length; i++) {
+            const el = tr.childNodes[i];
+            const id = (el as HTMLDivElement).id;
+            if (id === draggedId) {
+              continue;
+            }
+
+            if (el) {
+              const x1 =
+                (el as HTMLElement).getBoundingClientRect().x +
+                (el as HTMLElement).getBoundingClientRect().width / 2;
+              const x2 =
+                (el as HTMLElement).getBoundingClientRect().x +
+                (el as HTMLElement).getBoundingClientRect().width;
+
+              if (dropElementX <= x1) {
+                const newPosition = (el as HTMLElement).id.slice(
+                  (el as HTMLElement).id.length - 1
+                );
+                props.headers.splice(+newPosition, 0, header);
+                setRender(!render);
+                draggedId = '';
+                break;
+              } else if (dropElementX <= x2) {
+                if (draggable) {
+                  const newPosition = (el as HTMLElement).id.slice(
+                    (el as HTMLElement).id.length - 1
+                  );
+                  props.headers.splice(+newPosition, 0, header);
+                  setRender(!render);
+                  draggedId = '';
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const handleFilterItemClick = (checked: boolean, r: string, s: string) => {
+    if (checked) {
+      setFilterColumn(s);
+      if (!checkedFilters.includes(r)) {
+        checkedFilters.push(r);
+        setFilterChecked(true);
+        if (s.length > 0) {
+          const newData = props.data.filter((d) =>
+            checkedFilters.includes(d[s])
+          );
+          setFilteredData(newData);
+        }
+      }
+    } else {
+      const newFilters = checkedFilters.filter((f) => f !== r);
+      if (newFilters.length == 0) {
+        setFilteredData(props.data);
+      }
+      setCheckedFilters(newFilters);
+      if (newFilters.length === 0) {
+        setFilterChecked(false);
+      } else {
+        setFilterChecked(true);
+      }
+    }
+  };
+
+  const handleMainFilterClick = (checked: boolean, header: string) => {
+    if (checked) {
+      setFilterColumn(header);
+    } else {
+      setFilterColumn('');
+    }
+  };
+
   function renderHeader(header: TableHeader<T>, id: number) {
     const { title, visible = true } = header;
     if (!visible === false) {
       return (
         <th
+          draggable
           key={`table-header-${id}`}
           id={`table-header-${props.identifier}-${id}`}
           style={header.style}
           className="mikto-header-sort"
+          onDragStart={dragStart}
         >
           <span
             style={{ width: '80%' }}
@@ -140,7 +278,7 @@ export function DataGrid<T>(props: TableProps<T>) {
               textAlign: 'center',
             }}
             onClick={() =>
-              handleModal(`table-header-${props.identifier}-${id}`)
+              handleModal(`table-header-${props.identifier}-${id}`, header)
             }
             className={`mikto-grid-chevron down`}
           ></span>
@@ -182,11 +320,16 @@ export function DataGrid<T>(props: TableProps<T>) {
   }
   return (
     <div>
-      <table ref={table} className="mikto-table">
-        <thead>
+      <table ref={table} className="mikto-table" id={props.identifier}>
+        <thead
+          onDragOver={dragOver}
+          onDragEnter={dragEnter}
+          onDragLeave={dragLeave}
+          onDrop={drop}
+        >
           <tr>{props.headers.map(renderHeader)}</tr>
         </thead>
-        <tbody>{props.data.map(renderRow)}</tbody>
+        <tbody>{filteredData.map(renderRow)}</tbody>
       </table>
       <div id={`mikto-columns-${props.identifier}`}></div>
       <Columns
@@ -196,6 +339,17 @@ export function DataGrid<T>(props: TableProps<T>) {
         headers={props.headers as unknown as string[]}
         checkedColumns={checkedColumns}
         handleCheckClick={handleColumnCheck}
+        // @ts-ignore
+        header={selectedHeader}
+        identifier={props.identifier}
+        data={props.data}
+        filterChecked={filterChecked}
+        handleMainFilterClick={handleMainFilterClick}
+        checkedFilters={checkedFilters}
+        setCheckedFilters={setCheckedFilters}
+        handleFilterItemClick={handleFilterItemClick}
+        showFilter={showFilter}
+        setShowFilter={setShowFilter}
       />
     </div>
   );
