@@ -140,3 +140,36 @@ export const data = [
     },
   },
 ];
+
+export const data2 = [
+  {
+    id: 1,
+    name: 'Whataburgers',
+    state: 'ky',
+    employees: 50,
+  },
+  {
+    id: 2,
+    name: 'McDonalds',
+    state: 'tn',
+    employees: 25,
+  },
+  {
+    id: 3,
+    name: 'Dennys',
+    state: 'tn',
+    employees: 125,
+  },
+  {
+    id: 4,
+    name: 'Wendys',
+    state: 'ky',
+    employees: 15,
+  },
+  {
+    id: 5,
+    name: 'Taco Bell',
+    state: 'ky',
+    employees: 42,
+  },
+];
