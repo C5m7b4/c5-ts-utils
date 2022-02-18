@@ -10,15 +10,15 @@ const formatDate = (date: any) => {
       day = newDate.getDate(),
       year = newDate.getFullYear();
 
-    return month + '/' + day + '/' + year;
+    return `${month}/${day}/${year}`;
   }
 
   if (Object.prototype.toString.call(date) === '[object Date]') {
-    const month = date.getMonth() + 1,
+    const month = (date.getMonth() as number) + 1,
       day = date.getDate(),
       year = date.getFullYear();
 
-    return month + '/' + day + '/' + year;
+    return `${month}/${day}/${year}`;
   }
 
   return '';
@@ -34,11 +34,11 @@ const formatTimeString = (date: string | Date) => {
 
   let hours = date.getHours();
   let minutes: string | number = date.getMinutes();
-  let ampm = hours >= 12 ? 'pm' : 'am';
+  const ampm = hours >= 12 ? 'pm' : 'am';
   hours = hours % 12;
   hours = hours ? hours : 12;
-  minutes = minutes < 10 ? '0' + minutes : minutes;
-  var strTime = hours + ':' + minutes + ' ' + ampm;
+  minutes = minutes < 10 ? '0' + minutes.toString() : minutes;
+  const strTime = `${hours}:${minutes} ${ampm}`;
   return strTime;
 };
 
@@ -53,10 +53,10 @@ const formatMoney = (
 
   const negativeSign = amount < 0 ? '-' : '';
 
-  let i: any = parseInt(
+  const i: any = parseInt(
     (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
   ).toString();
-  let j = i.length > 3 ? i.length % 3 : 0;
+  const j = i.length > 3 ? i.length % 3 : 0;
 
   return (
     negativeSign +
