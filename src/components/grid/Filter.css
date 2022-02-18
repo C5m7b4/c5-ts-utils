@@ -1,0 +1,8 @@
+.mikto-table-filter-title {
+  margin-left: 8px;
+}
+
+.mikto-table-filter-item {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+}
